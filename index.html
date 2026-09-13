@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .bottom-bar {
+            position: absolute;
+            bottom: 40px;
+            left: 10%;
+            width: 80%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .status {
+            font-size: 14px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .progress-bg {
+            width: 100%;
+            height: 15px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #e74c3c;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audio" src="music.mp3" autoplay loop></audio>
+
+    <div class="bottom-bar">
+        <div id="status" class="status">Chargement du serveur...</div>
+        <div class="progress-bg">
+            <div id="fill" class="progress-fill"></div>
+        </div>
+    </div>
+
+    <script>
+        var total = 0;
+        var needed = 0;
+
+        // Réglage du volume (0.3 = 30%)
+        var audio = document.getElementById('audio');
+        if (audio) audio.volume = 0.3;
+
+        // Fonctions lues automatiquement par GMod
+        function SetFilesTotal(t) { total = t; }
+        function SetFilesNeeded(n) { needed = n; update(); }
+        function DownloadingFile(f) { 
+            document.getElementById('status').innerText = "Téléchargement : " + f; 
+            update(); 
+        }
+        function SetStatusChanged(s) { document.getElementById('status').innerText = s; }
+
+        function update() {
+            if (total > 0) {
+                var downloaded = total - needed;
+                var percentage = Math.floor((downloaded / total) * 100);
+                document.getElementById('fill').style.width = Math.min(percentage, 100) + "%";
+            }
+        }
+    </script>
+</body>
+</html>
