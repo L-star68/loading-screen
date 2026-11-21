@@ -1,0 +1,55 @@
+ÉCRAN DE CHARGEMENT : MODE D'EMPLOI
+===================================
+
+CE QU'IL Y A DANS CE DOSSIER
+    index.html   la page (tout se règle dans la section CONFIGURATION, en haut du <script>)
+    img/         tes images : bg1.jpg, bg2.jpg, bg3.jpg, bg4.jpg (diaporama) et logo.png (facultatif)
+    music/       tes musiques (mp3 ou ogg), à déclarer dans CONFIG.music
+
+COMMENT ÇA MARCHE
+    L'écran de chargement n'est PAS dans l'addon du serveur : c'est une page web que GMod ouvre
+    pendant la connexion, avant même d'avoir téléchargé quoi que ce soit. Elle doit donc être
+    hébergée sur internet (en https).
+
+ÉTAPE 1 : PRÉPARER
+    - Images : JPG 1920x1080, moins de 500 Ko chacune (sinon le début du chargement est lent).
+      Nomme-les comme dans CONFIG.images, ou modifie la liste.
+    - Musique : mp3 ou ogg. Déclare chaque morceau dans CONFIG.music, par exemple :
+          { title: "Nom du morceau", file: "music/morceau1.mp3" },
+      ATTENTION aux droits d'auteur : utilise de la musique libre de droits (YouTube Audio Library,
+      Pixabay Music, Incompetech, FreePD...) ou dont tu as l'autorisation.
+    - Texte : change le nom du serveur, le slogan, les astuces, les règles et le lien Discord.
+
+ÉTAPE 2 : TESTER DANS TON NAVIGATEUR
+    Ouvre index.html dans Chrome, en ajoutant #demo à la fin de l'adresse :
+        file:///.../loading_screen/index.html#demo
+    Tu verras la page avec une fausse progression. (Si tu ouvres le fichier directement, les images
+    du dossier img/ s'affichent aussi.)
+
+ÉTAPE 3 : L'HÉBERGER (gratuit)
+    Option simple : GitHub Pages
+      1. Crée un compte GitHub, puis un dépôt public (ex : "chargement").
+      2. Envoie-y tout le dossier loading_screen (index.html, img/, music/).
+      3. Settings > Pages > branche "main", dossier "/ (root)" > Save.
+      4. Ton adresse sera de la forme : https://TONPSEUDO.github.io/chargement/
+    Alternatives : Netlify, Cloudflare Pages, ou l'espace web de ton hébergeur de serveur.
+
+ÉTAPE 4 : DIRE AU SERVEUR D'UTILISER CETTE PAGE
+    Dans server.cfg (ou dans les paramètres de ton hébergeur), ajoute :
+        sv_loadingurl "https://TONPSEUDO.github.io/chargement/index.html"
+    Redémarre le serveur. L'écran apparaît à la prochaine connexion de chaque joueur.
+    (Pas d'accès à server.cfg ? Dis-le-moi : on peut aussi le régler depuis un fichier Lua du serveur.)
+
+    Facultatif : sv_loadingurl "https://.../index.html?map=%m" transmet la map à la page.
+
+PROBLÈMES FRÉQUENTS
+    - Page blanche ou noire : l'adresse n'est pas en https, ou le fichier n'est pas accessible
+      publiquement. Colle l'adresse dans ton navigateur : tu dois voir la page.
+    - Les images ne s'affichent pas : vérifie les noms (minuscules, pas d'espace) et qu'elles sont bien
+      dans le dossier img/ à côté d'index.html. Sans image, un fond dégradé s'affiche.
+    - Pas de musique au lancement : certains navigateurs bloquent le son automatique ; le joueur peut
+      cliquer sur le bouton lecture. Sans musique déclarée, le lecteur n'apparaît pas.
+    - Pour changer la page : modifie le fichier sur ton hébergeur ; les joueurs la voient au chargement
+      suivant (vide le cache du navigateur si tu testes).
+
+LE FICHIER img/ ET music/ SONT VIDES POUR L'INSTANT : mets-y tes fichiers avant d'envoyer le dossier en ligne.
