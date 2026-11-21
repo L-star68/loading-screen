@@ -1,1 +1,0 @@
-Mets ici tes musiques (mp3 ou ogg), puis déclare-les dans CONFIG.music de ../index.html. Utilise de la musique libre de droits.
