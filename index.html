@@ -2,338 +2,892 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Chargement...</title>
+<title>MYRA Community - Chargement</title>
 <style>
-/* ===== Couleur d'accent : change-la ici (ou dans CONFIG.accent plus bas) ===== */
-:root { --accent: #3508b3; --bg: #0b0b10; }
+@font-face { font-family: "Outfit"; font-weight: 400; font-style: normal;
+  src: url(fonts/outfit-latin-400-normal.woff2) format("woff2"), url(fonts/outfit-latin-400-normal.woff) format("woff"); }
+@font-face { font-family: "Outfit"; font-weight: 500; font-style: normal;
+  src: url(fonts/outfit-latin-500-normal.woff2) format("woff2"), url(fonts/outfit-latin-500-normal.woff) format("woff"); }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
-    width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: #ececf4;
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif; user-select: none; cursor: default;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "Outfit", "Segoe UI", Arial, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-/* ---------- Fond : diaporama avec léger zoom ---------- */
-.slide {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background-size: cover; background-position: center; opacity: 0;
-    transition: opacity 1.6s ease; animation: kb 18s ease-out forwards;
-}
-@keyframes kb { from { transform: scale(1); } to { transform: scale(1.12); } }
-
-#fallback {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(ellipse at 30% 20%, #2a1f45 0%, #0b0b10 70%);
-}
-#shade {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background:
-        linear-gradient(to right, rgba(6,6,10,.82) 0%, rgba(6,6,10,.35) 55%, rgba(6,6,10,.7) 100%),
-        linear-gradient(to top, rgba(6,6,10,.95) 0%, rgba(6,6,10,0) 40%);
+/* Scene 16:9. Le script fixe sa taille et son em (1em = 1% de la largeur). */
+#stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #1a0000;
+  font-size: 12px;
 }
 
-/* ---------- En-tête : logo + nom du serveur ---------- */
-#brand { position: absolute; left: 5vw; top: 7vh; max-width: 55vw; }
-#logo { display: none; height: 14vh; max-width: 30vw; margin-bottom: 2vh; }
-#serverName { font-size: 6.4vh; font-weight: 900; letter-spacing: .5vh; line-height: 1.05; text-shadow: 0 .4vh 2vh rgba(0,0,0,.8); }
-#serverName span { color: var(--accent); }
-#tagline { margin-top: 1.2vh; font-size: 2.4vh; color: #b9b9c8; letter-spacing: .3vh; }
-#bar-accent { width: 9vh; height: .6vh; margin-top: 2.4vh; background: var(--accent); border-radius: 1vh; }
-
-/* ---------- Statut ---------- */
-#status-box { position: absolute; left: 5vw; bottom: 14vh; width: 55vw; }
-#status { font-size: 3vh; font-weight: 700; }
-#file { margin-top: .8vh; font-size: 1.9vh; color: #9a9aae; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#meta { margin-top: 1.4vh; font-size: 1.9vh; color: #b9b9c8; }
-#meta b { color: var(--accent); }
-
-/* ---------- Carte latérale : astuces + infos ---------- */
-#side { position: absolute; right: 4vw; top: 8vh; width: 28vw; min-width: 300px; }
-.card {
-    background: rgba(14,14,22,.78); border: 1px solid rgba(255,255,255,.08);
-    border-left: .5vh solid var(--accent); border-radius: 1.2vh; padding: 2.4vh 2.2vw; margin-bottom: 2.4vh;
+.layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
-.card h3 { font-size: 1.7vh; letter-spacing: .35vh; color: var(--accent); margin-bottom: 1.4vh; }
-#tip { font-size: 2.2vh; line-height: 1.5; min-height: 9vh; transition: opacity .6s ease; }
-#rules li { font-size: 1.9vh; line-height: 1.7; margin-left: 2vh; color: #d6d6e2; }
-#discord { font-size: 2.1vh; color: #d6d6e2; }
-#discord b { color: var(--accent); }
+
+/* ---------- Fonds en fondu enchaine ---------- */
+#bgs { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+.bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  opacity: 0;
+  -webkit-transition: opacity 1.6s ease-in-out;
+  transition: opacity 1.6s ease-in-out;
+}
+.bg.active { opacity: 1; }
+
+/* ---------- Effets ---------- */
+#fx-grain { opacity: 0.05; }
+
+#fx-vignette {
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%);
+  animation: heartbeat 4s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { opacity: 0.7; }
+  12%      { opacity: 1; }
+  24%      { opacity: 0.75; }
+  36%      { opacity: 1; }
+  60%      { opacity: 0.7; }
+}
+
+#fx-flash { background: #ff0000; opacity: 0; }
+
+#fx-intro {
+  background: #000;
+  animation: intro 1.6s ease-out forwards;
+}
+@keyframes intro { to { opacity: 0; visibility: hidden; } }
 
 /* ---------- Barre de progression ---------- */
-#progress { position: absolute; left: 0; right: 0; bottom: 0; height: 9vh; background: rgba(6,6,10,.9); }
-#track { position: absolute; left: 5vw; right: 5vw; top: 3.4vh; height: 1.1vh; background: rgba(255,255,255,.1); border-radius: 1vh; overflow: hidden; }
-#bar { width: 0%; height: 100%; background: linear-gradient(90deg, #260581, var(--accent), #3508b3); border-radius: 1vh; box-shadow: 0 0 2vh var(--accent); }
-#pct { position: absolute; right: 5vw; top: .3vh; font-size: 1.8vh; font-weight: 700; color: var(--accent); }
-#progress-label { position: absolute; left: 5vw; top: .3vh; font-size: 1.8vh; color: #9a9aae; letter-spacing: .3vh; }
+#bar {
+  position: absolute;
+  left: 25.2%;
+  top: 89.5%;
+  width: 52.2%;
+  height: 4.5%;
+  border-radius: 999px;
+  overflow: hidden;
+}
+#fill {
+  position: relative;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #3a0000 0%, #8a0000 55%, #d10000 100%);
+}
+#fill::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255,120,120,0.4), transparent);
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
+  animation: shimmer 2.2s linear infinite;
+}
+@keyframes shimmer { to { -webkit-transform: translateX(430%); transform: translateX(430%); } }
 
-/* ---------- Lecteur de musique ---------- */
-#music {
-    position: absolute; right: 4vw; bottom: 11vh; width: 28vw; min-width: 300px; display: none;
-    background: rgba(14,14,22,.78); border: 1px solid rgba(255,255,255,.08); border-radius: 1.2vh; padding: 1.6vh 1.4vw;
+#percent {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  margin-top: -0.6em;
+  text-align: center;
+  font-size: 0.95em;
+  line-height: 1.2em;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: #fff;
+  text-shadow: 0 0 0.5em #000, 0 0 0.9em rgba(255, 0, 0, 0.6);
 }
-#music .row { display: flex; align-items: center; }
-#playBtn {
-    width: 4.6vh; height: 4.6vh; min-width: 34px; min-height: 34px; border-radius: 50%; border: none; cursor: pointer;
-    background: var(--accent); color: #1a1405; font-size: 2vh; font-weight: 900; margin-right: 1.2vw;
+
+/* ---------- Texte envoye par GMod ---------- */
+#status {
+  position: absolute;
+  left: 20%;
+  width: 63.8%;
+  top: 86.9%;
+  text-align: center;
+  font-size: 0.95em;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 0.5em #000, 0 0 0.15em #000, 0 0.1em 0.25em #000;
 }
-#trackTitle { flex: 1; font-size: 1.9vh; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#vol { width: 7vw; min-width: 80px; margin-left: 1vw; accent-color: var(--accent); cursor: pointer; }
-#musicHint { margin-top: .8vh; font-size: 1.5vh; color: #8a8aa0; }
+#status.chg { animation: statusIn 0.9s ease-out; }
+@keyframes statusIn {
+  0%   { color: #ff2a2a; opacity: 0; }
+  25%  { opacity: 1; }
+  100% { color: #fff; opacity: 1; }
+}
+
+/* Detail des fichiers OU conseil qui tourne quand rien ne se telecharge */
+#detail {
+  position: absolute;
+  left: 25.2%;
+  width: 52.2%;
+  top: 95.2%;
+  text-align: center;
+  font-size: 0.78em;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 0.5em #000, 0 0 0.15em #000;
+  -webkit-transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease;
+}
+#detail.tip { font-style: italic; color: rgba(255, 255, 255, 0.72); }
+
+/* ---------- Citations ---------- */
+#quote {
+  position: absolute;
+  top: 19%;
+  width: 32%;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 1.25em;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 0.5em #000, 0 0 0.15em #000, 0 0.08em 0.25em #000, 0 0 0.8em rgba(255, 0, 0, 0.3);
+  opacity: 0;
+  -webkit-transition: opacity 0.9s ease;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+#quote.left  { left: 4.5%;  text-align: left; }
+#quote.right { right: 4.5%; text-align: right; }
+#quote.show  { opacity: 1; }
+
+/* Chaque lettre apparait en rouge sang puis devient blanche */
+#quote .ch { opacity: 0; color: #ff2a2a; transition: opacity 0.25s ease-out, color 0.9s ease-out; }
+#quote .ch.on { opacity: 1; color: rgba(255, 255, 255, 0.92); }
+
+/* Petit glitch du texte (separation rouge / cyan) */
+#quote.tg {
+  -webkit-transform: translateX(2px);
+  transform: translateX(2px);
+  text-shadow: 2px 0 rgba(255, 0, 0, 0.9), -2px 0 rgba(0, 255, 255, 0.6), 0 0 0.5em #000;
+}
+
+/* ---------- Alertes : jalons de progression et fausses erreurs ---------- */
+#alert {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6.5%;
+  padding: 0.5em 0;
+  text-align: center;
+  font-size: 1.55em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: #ff2a2a;
+  background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.6) 20%, rgba(0,0,0,0.6) 80%, rgba(0,0,0,0));
+  text-shadow: 0 0 0.6em #000, 0 0 0.9em rgba(255, 0, 0, 0.6);
+  opacity: 0;
+  -webkit-transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+#alert.show { opacity: 1; }
+#alert.err { font-family: "Courier New", monospace; font-size: 1.05em; color: #ff6a6a; letter-spacing: 0.04em; }
+
+/* ---------- Petites phrases qui apparaissent au clic ---------- */
+.pop {
+  position: absolute;
+  font-size: 1.05em;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 0 0.4em #000, 0 0 0.15em #000, 0 0 0.8em rgba(255, 0, 0, 0.5);
+  pointer-events: none;
+  animation: pop 1.9s ease-out forwards;
+}
+@keyframes pop {
+  0%   { opacity: 0; -webkit-transform: translate(-50%, 0); transform: translate(-50%, 0); }
+  12%  { opacity: 1; }
+  100% { opacity: 0; -webkit-transform: translate(-50%, -2.6em); transform: translate(-50%, -2.6em); }
+}
+
+/* ---------- Controle musique ---------- */
+#music-ctrl {
+  position: absolute;
+  left: 2.2%;
+  bottom: 3.5%;
+  display: flex;
+  align-items: center;
+  opacity: 0.55;
+}
+#music-ctrl:hover { opacity: 1; }
+
+#mute {
+  width: 1.83em;
+  height: 1.83em;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #8a0000;
+  background: rgba(20, 0, 0, 0.7);
+  color: #ff2a2a;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+#mute.off { color: #666; border-color: #444; text-decoration: line-through; }
+
+#volume { width: 6em; margin-left: 0.6em; cursor: pointer; accent-color: #b00000; }
+
 </style>
 </head>
 <body>
+<!--STAGE-->
+<div id="stage">
+  <!-- Fonds (ajoutes par le script) -->
+  <div id="bgs"></div>
 
-<div id="fallback"></div>
-<div class="slide" id="slideA"></div>
-<div class="slide" id="slideB"></div>
-<div id="shade"></div>
+  <!-- Effets d'ambiance -->
+  <canvas id="fx-particles" class="layer"></canvas>
+  <canvas id="fx-grain" class="layer"></canvas>
+  <div id="fx-vignette" class="layer"></div>
+  <div id="fx-flash" class="layer"></div>
 
-<div id="brand">
-    <img id="logo" alt="">
-    <div id="serverName"></div>
-    <div id="tagline"></div>
-    <div id="bar-accent"></div>
+  <!-- Citation du personnage -->
+  <div id="quote"></div>
+
+  <!-- Alertes (jalons + fausses erreurs) -->
+  <div id="alert"></div>
+
+  <!-- Barre de progression (calee sur le cadre dessine dans les images) -->
+  <div id="bar"><div id="fill"></div><div id="percent">0%</div></div>
+
+  <!-- Texte envoye par GMod + detail des fichiers / conseils -->
+  <div id="status">Veuillez patienter...</div>
+  <div id="detail"></div>
+
+  <!-- Controle musique -->
+  <div id="music-ctrl">
+    <button id="mute" title="Couper / activer la musique (M)">&#9835;</button>
+    <input id="volume" type="range" min="0" max="100" value="40" title="Volume">
+  </div>
+
+  <!-- Fondu d'entree depuis le noir -->
+  <div id="fx-intro" class="layer"></div>
 </div>
-
-<div id="status-box">
-    <div id="status">Connexion au serveur...</div>
-    <div id="file"></div>
-    <div id="meta"></div>
-</div>
-
-<div id="side">
-    <div class="card"><h3>LE SAVAIS-TU ?</h3><div id="tip"></div></div>
-    <div class="card" id="rulesCard"><h3>RÈGLES RAPIDES</h3><ul id="rules"></ul></div>
-    <div class="card" id="discordCard"><h3>COMMUNAUTÉ</h3><div id="discord"></div></div>
-</div>
-
-<div id="music">
-    <div class="row">
-        <button id="playBtn">&#9654;</button>
-        <div id="trackTitle"></div>
-        <input id="vol" type="range" min="0" max="100" value="35">
-    </div>
-    <div id="musicHint"></div>
-</div>
-
-<div id="progress">
-    <div id="progress-label">CHARGEMENT</div>
-    <div id="pct">0%</div>
-    <div id="track"><div id="bar"></div></div>
-</div>
+<audio id="music" src="music/Myra.mp3" loop preload="auto"></audio>
+<!--/STAGE-->
 
 <script>
-/* =====================================================================
-   CONFIGURATION : tout se règle ici
-   ===================================================================== */
-var CONFIG = {
-    serverName: "MYRA | The Unknown Roleplay",          // affiché en grand (mets le dernier mot en couleur avec accentWord)
-    accentWord: "",                        // ex : "RP" -> le mot "RP" sera coloré. Laisse vide pour ne rien colorer.
-    tagline:    "Faites toujours attention aux coins sombres...",
-    accent:     "#3508b3",                 // couleur principale 
+/* ===== MYRA Community - ecran de chargement GMod ===== */
 
-    logo:   "img/logo.png",                // facultatif : s'il n'existe pas, il n'est simplement pas affiché
+/* ---------- REGLAGES (modifie ici) ---------- */
+var SLIDE_DELAY = 7000;      // ms entre deux fonds (le rythme varie un peu au hasard pour ne pas endormir)
+var DEFAULT_VOLUME = 0.4;    // volume de depart (0 a 1)
 
-    // Images du diaporama (mets les tiennes dans le dossier img/). Format conseillé : JPG 1920x1080, moins de 500 Ko.
-    images: [
-        "img/bg1.jpg",
-        "img/bg2.jpg",
-        "img/bg3.jpg",
-        "img/bg4.jpg"
-    ],
-    slideSeconds: 8,                       // durée d'affichage de chaque image
+/* Taille de tes images de fond. Mets 1920 x 1080 si tes images sont en 16:9 (sinon elles sont etirees). */
+var STAGE_W = 1920, STAGE_H = 1080;
 
-    // Musique (mp3 ou ogg dans le dossier music/). Laisse la liste vide pour ne pas avoir de lecteur.
-    music: [
-    { title: "JIN", file: "music/JIN — Aurora Belladonna.mp3" }    // { title: "Nom du morceau", file: "music/morceau1.mp3" },
-    ],
-    musicVolume: 0.35,                     // volume de départ (0 à 1) ; le joueur peut le changer
-    musicShuffle: true,                    // commence sur un morceau au hasard
+/* Images de fond (dans l'ordre). Les citations suivent le meme ordre. */
+var IMAGES = [
+  "images/bg1.jpg", "images/bg2.jpg", "images/bg3.jpg", "images/bg4.jpg", "images/bg5.jpg"
+];
 
-    tips: [
-        "Tape !bari en jeu pour voir toutes les commandes du serveur.",
-        "Les élections du Maire ont lieu toutes les semaines : présente-toi et vote !",
-        "La Division Spéciale est la seule force capable d'affronter réellement les entités.",
-        "Appuie sur F4 pour choisir ton job, acheter des objets et lancer des actions rapides.",
-        "Un grade de police ou de médecin se débloque avec du temps de jeu ou une whitelist."
-    ],
-    tipSeconds: 7,
+/* Citations : side = cote de l'ecran ("left" ou "right"). text: "" = aucune citation. */
+var QUOTES = [
+  { text: "« Reste un peu... il fait si froid ici. »",       side: "left"  },
+  { text: "« Tu ne m'as pas cherché. Je t'attendais. »", side: "right" },
+  { text: "« Souris... ça ira mieux après. »",       side: "left"  },
+  { text: "« Je ne parle pas. Je regarde. »",                side: "left"  },
+  { text: "« Je n'ai pas d'yeux, mais je te vois. »",        side: "right" }
+];
 
-    rules: [
-        "Respecte les autres joueurs",
-        "Joue comme si tu es ton personnage",
-        "Reste dans ton rôle (RP)"
-    ],
+/* Jalons : message qui claque quand la barre franchit ce pourcentage (ajoute / retire des lignes) */
+var MILESTONES = [
+  { at: 10, text: "Connexion établie. Il sait que tu es là." },
+  { at: 25, text: "Les lumières viennent de clignoter. C'est normal." },
+  { at: 40, text: "Quelqu'un vient d'ouvrir une porte derrière toi." },
+  { at: 55, text: "Ne regarde pas dans ton placard." },
+  { at: 70, text: "Rassure-toi : la plupart des entités sont très sympas. La plupart." },
+  { at: 85, text: "Dernière ligne droite... tu entends respirer ?" },
+  { at: 95, text: "Trop tard pour faire demi-tour." }
+];
 
-    discord: "discord.gg/Bz8MuwakCG"          // laisse vide pour masquer le bloc
+/* Fausses erreurs : apparaissent de temps en temps, style terminal */
+var FAKE_ERRORS = [
+  "[ERREUR 404] Courage introuvable.",
+  "[ALERTE] Une présence a été détectée derrière ton écran.",
+  "[SYSTÈME] Chargement des cauchemars... 0 sur 1 prêt.",
+  "[ERREUR] Ton instinct de survie n'a pas pu être chargé.",
+  "[INFO] Ce message n'a pas été envoyé par le serveur... Par qui ?"
+];
+
+/* Conseils / blagues sous la barre (quand aucun fichier ne se telecharge) */
+var TIPS = [
+  "Astuce : tape !bari pour voir toutes les commandes du serveur.",
+  "Astuce : F4 pour choisir ton métier, acheter des objets et lancer des actions rapides.",
+  "Le Maire est élu chaque semaine. Présente-toi... ou vote pour le moins suspect.",
+  "La Division Spéciale existe pour une raison. Ne cherche pas laquelle.",
+  "Astuce : si tu entends respirer derrière toi alors que t'es seul dans le couloir, c'est probablement un collègue qui veut un p'tit check.",
+  "Conseil : ne te cache jamais derrière quelqu'un de plus lent que toi.",
+  "Astuce : avant d'ouvrir une porte verrouillée au crochet, vérifie que personne ne te regarde avec un fusil à pompe.",
+  "Conseil : si une lumière clignote, quelqu'un te regarde. Ou l'ampoule est fatiguée.",
+  "Les entités adorent l'obscurité. Les joueurs adorent casser les lampes pour 'faire l'ambiance'. Vous voyez le problème ?",
+  "Info : les sceaux de la Division Spéciale ralentissent les entités. Pas les mauvaises idées.",
+  "Les entités sont plus fortes que toi. Heureusement, tu as des amis. Enfin... des appâts."
+];
+
+/* Phrases qui apparaissent quand on clique n'importe ou */
+var CLICK_LINES = [
+  "Aïe.",
+  "Arrête de cliquer, ça ne charge pas plus vite.",
+  "Il t'a vu cliquer.",
+  "Ça ne sert à rien. Mais continue.",
+  "Chut.",
+  "Tu cherches quoi, exactement ?",
+  "Ne touche pas l'écran, il est fragile.",
+  "Clique encore. Je compte.",
+  "Si ça se trouve l'écran va pleurer ?"
+];
+var CLICK_SPECIAL = {
+  10: "Dix clics. On est amis maintenant.",
+  30: "Trente clics. Je commence à avoir peur de toi.",
+  60: "Soixannte... Je me pose des questions sur ton état psychologique."
 };
 
-/* =====================================================================
-   Code (tu n'as normalement rien à modifier en dessous)
-   ===================================================================== */
+/* Effets : false = desactive */
+var EFFECTS = {
+  particles: true,   // braises et cendres
+  grain: true,       // grain de film
+  glitch: true,      // glitchs / flashs
+  vignette: true     // vignette qui pulse
+};
+
+/* Ajoute ?low a l'adresse pour couper les effets lourds (PC faibles) */
+var QUERY = window.location.search || "";
+function hasParam(name) { return new RegExp("[?&]" + name + "(&|=|$)").test(QUERY); }
+if (hasParam("low")) { EFFECTS.particles = false; EFFECTS.grain = false; EFFECTS.glitch = false; }
+
+/* ---------- Elements ---------- */
 function $(id) { return document.getElementById(id); }
+var stageEl = $("stage");
+var bgsEl = $("bgs");
+var fillEl = $("fill");
+var percentEl = $("percent");
+var statusEl = $("status");
+var detailEl = $("detail");
+var quoteEl = $("quote");
+var alertEl = $("alert");
+var audio = $("music");
+var muteBtn = $("mute");
+var volSlider = $("volume");
 
-(function init() {
-    document.documentElement.style.setProperty("--accent", CONFIG.accent);
+/* Petite secousse + flash rouge : remplacee plus bas par la vraie version si les glitchs sont actifs */
+var glitchBurst = function (done) { if (done) done(); };
 
-    // Nom du serveur (avec un mot coloré facultatif)
-    var name = CONFIG.serverName;
-    if (CONFIG.accentWord && name.indexOf(CONFIG.accentWord) !== -1) {
-        name = name.replace(CONFIG.accentWord, "<span>" + CONFIG.accentWord + "</span>");
+/* ---------- Mise en page : scene 16:9 centree, 1em = 1% de sa largeur ---------- */
+var RATIO = STAGE_W / STAGE_H;
+function layout() {
+  var vw = window.innerWidth || document.documentElement.clientWidth || 1920;
+  var vh = window.innerHeight || document.documentElement.clientHeight || 1080;
+  var w = vw, h = vw / RATIO;
+  if (h > vh) { h = vh; w = vh * RATIO; }
+  stageEl.style.width = Math.round(w) + "px";
+  stageEl.style.height = Math.round(h) + "px";
+  stageEl.style.left = Math.round((vw - w) / 2) + "px";
+  stageEl.style.top = Math.round((vh - h) / 2) + "px";
+  stageEl.style.fontSize = (w / 100) + "px";
+}
+layout();
+window.onresize = layout;
+
+/* ---------- Fonds : le 1er s'affiche tout de suite, les autres se chargent ensuite ---------- */
+var slides = [];
+var current = 0;
+
+function addSlide(src, qi, active) {
+  var d = document.createElement("div");
+  d.className = "bg" + (active ? " active" : "");
+  d.style.backgroundImage = "url(" + src + ")";
+  bgsEl.appendChild(d);
+  slides.push({ el: d, qi: qi });
+}
+addSlide(IMAGES[0], 0, true);
+
+function loadNext(k) {
+  if (k >= IMAGES.length) return;
+  var im = new Image();
+  im.onload = function () { addSlide(IMAGES[k], k, false); setTimeout(function () { loadNext(k + 1); }, 300); };
+  im.onerror = function () { loadNext(k + 1); };
+  im.src = IMAGES[k];
+}
+setTimeout(function () { loadNext(1); }, 1500);
+
+/* Changement de fond a intervalle irregulier : un rythme trop regulier endort */
+function nextSlide() {
+  if (slides.length >= 2) {
+    slides[current].el.classList.remove("active");
+    current = (current + 1) % slides.length;
+    slides[current].el.classList.add("active");
+    showQuote(slides[current].qi);
+  }
+  setTimeout(nextSlide, SLIDE_DELAY * (0.75 + Math.random() * 0.5));
+}
+setTimeout(nextSlide, SLIDE_DELAY);
+
+/* ---------- Citation (apparition lettre par lettre) ---------- */
+var quoteTimer = null;
+var revealTimer = null;
+function showQuote(i) {
+  clearTimeout(quoteTimer);
+  clearTimeout(revealTimer);
+  quoteEl.classList.remove("show");
+  var q = QUOTES[i];
+  if (!q || !q.text) return;
+  quoteTimer = setTimeout(function () {
+    quoteEl.innerHTML = "";
+    var letters = [];
+    for (var k = 0; k < q.text.length; k++) {
+      var sp = document.createElement("span");
+      sp.className = "ch";
+      sp.textContent = q.text.charAt(k);
+      quoteEl.appendChild(sp);
+      letters.push(sp);
     }
-    $("serverName").innerHTML = name;
-    $("tagline").textContent = CONFIG.tagline;
+    quoteEl.className = q.side === "right" ? "right" : "left";
+    void quoteEl.offsetWidth;
+    quoteEl.classList.add("show");
+    var n = 0;
+    (function reveal() {
+      if (n >= letters.length) return;
+      letters[n].classList.add("on");
+      n++;
+      revealTimer = setTimeout(reveal, 45);
+    })();
+  }, 1000);
+}
+setTimeout(function () { showQuote(0); }, 1200);
 
-    // Logo : affiché seulement s'il se charge
-    var logo = $("logo");
-    logo.onload = function () { logo.style.display = "block"; };
-    logo.src = CONFIG.logo;
+/* ---------- Alertes (jalons + fausses erreurs) ---------- */
+var alertTimer = null;
+function showAlert(text, kind, ms) {
+  clearTimeout(alertTimer);
+  alertEl.textContent = text;
+  alertEl.className = kind || "";
+  void alertEl.offsetWidth;
+  alertEl.classList.add("show");
+  glitchBurst();
+  alertTimer = setTimeout(function () { alertEl.classList.remove("show"); }, ms || 3400);
+}
 
-    // Règles et Discord
-    var rules = $("rules");
-    if (CONFIG.rules && CONFIG.rules.length) {
-        CONFIG.rules.forEach(function (r) { var li = document.createElement("li"); li.textContent = r; rules.appendChild(li); });
-    } else { $("rulesCard").style.display = "none"; }
-
-    if (CONFIG.discord) { $("discord").innerHTML = "Rejoins-nous : <b>" + CONFIG.discord + "</b>"; }
-    else { $("discordCard").style.display = "none"; }
+/* Fausse erreur de temps en temps, sans jamais couvrir un jalon */
+(function scheduleFakeError() {
+  setTimeout(function () {
+    if (!alertEl.classList.contains("show")) {
+      showAlert(FAKE_ERRORS[Math.floor(Math.random() * FAKE_ERRORS.length)], "err", 3000);
+    }
+    scheduleFakeError();
+  }, 15000 + Math.random() * 12000);
 })();
 
-/* ---------- Diaporama : ne garde que les images qui existent vraiment ---------- */
-(function slideshow() {
-    var front = $("slideA"), back = $("slideB"), valid = [], cur = 0;
+/* ---------- Progression (animee en douceur) ---------- */
+var target = 0, shown = 0;
+function setTarget(p) { target = Math.max(target, Math.min(100, p)); }
 
-    function show(url) {
-        back.style.backgroundImage = 'url("' + url + '")';
-        back.style.animation = "none"; void back.offsetWidth; back.style.animation = ""; // relance le zoom
-        back.style.opacity = 1;
-        front.style.opacity = 0;
-        var t = front; front = back; back = t;
-        $("fallback").style.display = "none";
-    }
+/* Jalons : si la barre saute plusieurs paliers d'un coup, on n'affiche que le dernier */
+function checkMilestones() {
+  var last = null;
+  for (var i = 0; i < MILESTONES.length; i++) {
+    var m = MILESTONES[i];
+    if (!m.done && shown >= m.at) { m.done = true; last = m; }
+  }
+  if (last) showAlert(last.text, "", 3600);
+}
 
-    CONFIG.images.forEach(function (u) {
-        var im = new Image();
-        im.onload = function () { valid.push(u); if (valid.length === 1) show(u); };
-        im.src = u;
+setInterval(function () {
+  if (shown < target) {
+    shown += Math.max(0.2, (target - shown) * 0.08);
+    if (shown > target) shown = target;
+    fillEl.style.width = shown + "%";
+    percentEl.textContent = Math.floor(shown) + "%";
+    checkMilestones();
+  }
+}, 40);
+
+/* GMod ne donne des chiffres QUE s'il y a des fichiers a telecharger (et ses messages d'etat arrivent tard).
+   Tant qu'il n'a rien dit, la barre avance donc doucement toute seule, pour ne jamais paraitre figee. */
+var gotNumbers = false;
+var est = 2;
+setInterval(function () {
+  if (gotNumbers) return;
+  est += (88 - est) * 0.012;
+  setTarget(est);
+}, 250);
+
+var filesTotal = 0, filesNeeded = 0, neededKnown = false, currentFile = "";
+function updateFromFiles() {
+  /* GMod envoie le total avant le nombre restant : on attend les deux */
+  if (filesTotal > 0 && neededKnown) {
+    gotNumbers = true;
+    setTarget(((filesTotal - filesNeeded) / filesTotal) * 100);
+  }
+}
+
+/* ---------- Conseils sous la barre ---------- */
+var tipIdx = Math.floor(Math.random() * TIPS.length);
+var tipOn = true;
+function showTip() {
+  detailEl.className = "tip";
+  detailEl.textContent = TIPS[tipIdx % TIPS.length];
+}
+showTip();
+setInterval(function () {
+  if (!tipOn) return;
+  detailEl.style.opacity = 0;
+  setTimeout(function () {
+    if (tipOn) { tipIdx++; showTip(); }
+    detailEl.style.opacity = 1;
+  }, 500);
+}, 6500);
+
+/* ---------- Fonctions appelees par Garry's Mod ----------
+   Le texte affiche est celui envoye par GMod (dans la langue du joueur). */
+function showStatus(text) {
+  statusEl.textContent = text;
+  statusEl.classList.remove("chg");
+  void statusEl.offsetWidth;
+  statusEl.classList.add("chg");
+}
+function setDetail() {
+  var parts = [];
+  if (filesTotal > 0 && neededKnown) parts.push((filesTotal - filesNeeded) + " / " + filesTotal + " fichiers");
+  if (currentFile) parts.push(currentFile);
+  if (parts.length) {
+    tipOn = false;
+    detailEl.className = "";
+    detailEl.textContent = parts.join("   ·   ");
+    detailEl.style.opacity = 1;
+  } else {
+    tipOn = true;
+    showTip();
+  }
+}
+
+var playerVol = 1, volTouched = false;
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode, volume, language) {
+  /* GMod transmet le volume musique regle par le joueur : on le respecte tant qu'il n'a pas touche au curseur */
+  var pv = parseFloat(volume);
+  if (!isNaN(pv) && !volTouched) { playerVol = Math.max(0, Math.min(1, pv)); applyVolume(); }
+}
+function DownloadingFile(filename) {
+  currentFile = filename || "";
+  setDetail();
+}
+function SetFilesTotal(total) {
+  filesTotal = parseInt(total, 10) || 0;
+  updateFromFiles();
+  setDetail();
+}
+function SetFilesNeeded(needed) {
+  filesNeeded = parseInt(needed, 10) || 0;
+  neededKnown = true;
+  updateFromFiles();
+  setDetail();
+}
+function SetStatusChanged(status) {
+  var s = status || "";
+  showStatus(s);
+  /* la progression suit l'etape annoncee par GMod (anglais ou francais) */
+  if (/Starting Lua|Démarrage de Lua|Demarrage de Lua/i.test(s)) setTarget(95);
+  else if (/Lua/i.test(s)) setTarget(90);
+  else if (/Mounting|Montage/i.test(s)) setTarget(70);
+  else if (/Workshop/i.test(s)) setTarget(60);
+  else if (/sent|envoy/i.test(s)) setTarget(8);
+  else if (/Retriev|Récup|Recup|server info|serveur/i.test(s)) setTarget(10);
+  else if (/Sending|Envoi/i.test(s)) setTarget(5);
+}
+/* Explicitement accessibles a GMod */
+window.GameDetails = GameDetails;
+window.DownloadingFile = DownloadingFile;
+window.SetFilesTotal = SetFilesTotal;
+window.SetFilesNeeded = SetFilesNeeded;
+window.SetStatusChanged = SetStatusChanged;
+
+/* ---------- Clic : petites phrases ---------- */
+var clicks = 0;
+document.addEventListener("click", function (e) {
+  if (e.target === muteBtn || e.target === volSlider) return;
+  clicks++;
+  var text = CLICK_SPECIAL[clicks] || CLICK_LINES[Math.floor(Math.random() * CLICK_LINES.length)];
+  var r = stageEl.getBoundingClientRect();
+  var x = Math.max(r.width * 0.12, Math.min(r.width * 0.88, e.clientX - r.left));
+  var d = document.createElement("div");
+  d.className = "pop";
+  d.textContent = text;
+  d.style.left = x + "px";
+  d.style.top = (e.clientY - r.top) + "px";
+  stageEl.appendChild(d);
+  setTimeout(function () { if (d.parentNode) d.parentNode.removeChild(d); }, 1950);
+  if (clicks % 7 === 0) glitchBurst();
+});
+
+/* ---------- Musique ---------- */
+var muted = false;
+var vol = DEFAULT_VOLUME;
+var fade = 0;
+try {
+  var saved = window.localStorage.getItem("myra_volume");
+  if (saved !== null && !isNaN(parseFloat(saved))) { vol = parseFloat(saved); volTouched = true; }
+} catch (e) {}
+volSlider.value = Math.round(vol * 100);
+
+function applyVolume() {
+  audio.volume = muted ? 0 : Math.max(0, Math.min(1, vol * fade * playerVol));
+  muteBtn.classList.toggle("off", muted);
+}
+applyVolume();
+
+/* fondu d'entree de la musique (3 s) */
+var fadeTimer = setInterval(function () {
+  fade += 0.033;
+  if (fade >= 1) { fade = 1; clearInterval(fadeTimer); }
+  applyVolume();
+}, 100);
+
+function startMusic() {
+  var p = audio.play();
+  if (p && p.catch) {
+    p.catch(function () {
+      /* lecture bloquee : on reessaie au premier clic / touche */
+      var retry = function () {
+        audio.play();
+        document.removeEventListener("click", retry);
+        document.removeEventListener("keydown", retry);
+      };
+      document.addEventListener("click", retry);
+      document.addEventListener("keydown", retry);
     });
+  }
+}
+startMusic();
 
-    setInterval(function () {
-        if (valid.length > 1) { cur = (cur + 1) % valid.length; show(valid[cur]); }
-    }, CONFIG.slideSeconds * 1000);
-})();
+volSlider.addEventListener("input", function () {
+  vol = volSlider.value / 100;
+  muted = false;
+  volTouched = true;
+  applyVolume();
+  try { window.localStorage.setItem("myra_volume", vol); } catch (e) {}
+});
+muteBtn.addEventListener("click", function () { muted = !muted; applyVolume(); });
+document.addEventListener("keydown", function (e) {
+  if (e.key === "m" || e.key === "M") { muted = !muted; applyVolume(); }
+});
 
-/* ---------- Astuces qui tournent ---------- */
-(function tips() {
-    var el = $("tip"), i = Math.floor(Math.random() * CONFIG.tips.length);
-    function next() {
-        el.style.opacity = 0;
-        setTimeout(function () {
-            el.textContent = CONFIG.tips[i % CONFIG.tips.length];
-            el.style.opacity = 1;
-            i++;
-        }, 600);
-    }
-    next();
-    setInterval(next, CONFIG.tipSeconds * 1000);
-})();
-
-/* ---------- Progression (alimentée par GMod) ---------- */
-var filesTotal = 0, filesNeeded = 0, target = 0, shown = 0;
-
-function refreshProgress() {
-    if (filesTotal > 0) target = Math.max(0, Math.min(1, (filesTotal - filesNeeded) / filesTotal));
+/* ---------- Mode demo (apercu dans un navigateur) ----------
+   Ouvre index.html?demo pour simuler un chargement AVEC fichiers, ou ?demo2 pour un chargement SANS fichier. */
+if (hasParam("demo") || window.MYRA_DEMO) {
+  var fake = 0;
+  var demoSteps = {
+    1:  function () { SetStatusChanged("Envoi des informations client..."); },
+    12: function () { SetStatusChanged("Informations client envoyées !"); },
+    18: function () { SetFilesTotal(12); SetFilesNeeded(12); DownloadingFile("maps/gm_construct.bsp"); },
+    35: function () { SetFilesNeeded(8); DownloadingFile("materials/myra/logo.vmt"); },
+    55: function () { SetFilesNeeded(4); DownloadingFile("sound/myra/ambiance.mp3"); SetStatusChanged("Montage des contenus..."); },
+    75: function () { SetFilesNeeded(0); DownloadingFile(""); },
+    85: function () { SetStatusChanged("Démarrage de Lua..."); }
+  };
+  var demo = setInterval(function () {
+    fake += 1;
+    setTarget(fake);
+    if (demoSteps[fake]) demoSteps[fake]();
+    if (fake >= 100) clearInterval(demo);
+  }, 150);
+}
+if (hasParam("demo2")) {
+  /* Aucun fichier a telecharger : seuls quelques messages d'etat arrivent, et tard */
+  setTimeout(function () { SetStatusChanged("Envoi des informations client..."); }, 2000);
+  setTimeout(function () { SetStatusChanged("Montage des contenus..."); }, 20000);
+  setTimeout(function () { SetStatusChanged("Démarrage de Lua..."); }, 40000);
 }
 
-(function animateBar() {
-    shown += (target - shown) * 0.08;
-    if (Math.abs(target - shown) < 0.0005) shown = target;
-    $("bar").style.width = (shown * 100) + "%";
-    $("pct").textContent = filesTotal > 0 ? Math.round(shown * 100) + "%" : "...";
-    requestAnimationFrame(animateBar);
-})();
+/* ================= EFFETS ================= */
+function removeEl(id) {
+  var e = $(id);
+  if (e && e.parentNode) e.parentNode.removeChild(e);
+}
+if (!EFFECTS.particles) removeEl("fx-particles");
+if (!EFFECTS.grain) removeEl("fx-grain");
+if (!EFFECTS.vignette) removeEl("fx-vignette");
+if (!EFFECTS.glitch) removeEl("fx-flash");
 
-/* Traduction des statuts anglais de GMod les plus courants (le reste s'affiche tel quel) */
-function translateStatus(s) {
-    var l = (s || "").toLowerCase();
-    if (l.indexOf("workshop") !== -1) return "Téléchargement du contenu Workshop...";
-    if (l.indexOf("sending client info") !== -1) return "Envoi de tes informations...";
-    if (l.indexOf("retrieving server info") !== -1) return "Récupération des infos du serveur...";
-    if (l.indexOf("mounting") !== -1) return "Montage des contenus...";
-    if (l.indexOf("lua") !== -1) return "Chargement des scripts...";
-    if (l.indexOf("download") !== -1) return "Téléchargement des fichiers...";
-    if (l.indexOf("precach") !== -1) return "Préparation des ressources...";
-    if (l.indexOf("sending") !== -1 || l.indexOf("connect") !== -1) return "Connexion en cours...";
+/* Si le PC rame, on coupe automatiquement les effets les plus lourds */
+var grainTimer = null;
+var particlesOn = EFFECTS.particles;
+function disableHeavyEffects() {
+  particlesOn = false;
+  removeEl("fx-particles");
+  if (grainTimer) { clearInterval(grainTimer); grainTimer = null; }
+  removeEl("fx-grain");
+}
+
+/* ---------- Braises et cendres ---------- */
+if (EFFECTS.particles) {
+  var pc = $("fx-particles");
+  var pctx = pc.getContext("2d");
+  var PW = pc.width = 960, PH = pc.height = 520;
+
+  var makeSprite = function (r, g, b) {
+    var s = document.createElement("canvas");
+    s.width = s.height = 32;
+    var sc = s.getContext("2d");
+    var gr = sc.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gr.addColorStop(0, "rgba(" + r + "," + g + "," + b + ",1)");
+    gr.addColorStop(0.4, "rgba(" + r + "," + g + "," + b + ",0.45)");
+    gr.addColorStop(1, "rgba(" + r + "," + g + "," + b + ",0)");
+    sc.fillStyle = gr;
+    sc.fillRect(0, 0, 32, 32);
     return s;
-}
+  };
+  var sprites = [makeSprite(255, 40, 30), makeSprite(190, 20, 20), makeSprite(200, 190, 200)];
 
-/* Fonctions appelées automatiquement par GMod pendant le chargement */
-function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode) {
-    var parts = [];
-    if (mapname) parts.push("Map : <b>" + mapname + "</b>");
-    if (maxplayers) parts.push("<b>" + maxplayers + "</b> joueurs max");
-    $("meta").innerHTML = parts.join("  &nbsp;|&nbsp;  ");
-}
-function SetFilesTotal(total)   { filesTotal = total;   refreshProgress(); }
-function SetFilesNeeded(needed) { filesNeeded = needed; refreshProgress(); }
-function SetStatusChanged(status) { $("status").textContent = translateStatus(status); }
-function DownloadingFile(fileName) { $("file").textContent = fileName; }
-
-/* ---------- Lecteur de musique ---------- */
-(function music() {
-    var tracks = CONFIG.music || [];
-    if (!tracks.length) return;
-
-    $("music").style.display = "block";
-
-    var audio = new Audio();
-    var ti = CONFIG.musicShuffle ? Math.floor(Math.random() * tracks.length) : 0;
-    var vol = CONFIG.musicVolume;
-
-    // Volume mémorisé d'une connexion à l'autre (si le navigateur le permet)
-    try { var saved = localStorage.getItem("dsc_loading_vol"); if (saved !== null) vol = parseFloat(saved); } catch (e) {}
-    audio.volume = vol;
-    $("vol").value = Math.round(vol * 100);
-
-    function load(i) {
-        ti = i % tracks.length;
-        audio.src = tracks[ti].file;
-        $("trackTitle").textContent = tracks[ti].title;
-    }
-    function ui(playing) {
-        $("playBtn").innerHTML = playing ? "&#10074;&#10074;" : "&#9654;";
-        $("musicHint").textContent = playing ? "" : "Clique sur le bouton pour lancer la musique";
-    }
-    function play() {
-        var p = audio.play();
-        if (p && p.then) p.then(function () { ui(true); }, function () { ui(false); });
-    }
-
-    audio.addEventListener("ended", function () { load(ti + 1); play(); });
-    $("playBtn").onclick = function () { if (audio.paused) play(); else { audio.pause(); ui(false); } };
-    $("vol").oninput = function () {
-        audio.volume = this.value / 100;
-        try { localStorage.setItem("dsc_loading_vol", String(audio.volume)); } catch (e) {}
+  var newParticle = function (anywhere) {
+    return {
+      x: Math.random() * PW,
+      y: anywhere ? Math.random() * PH : PH + 15,
+      size: 4 + Math.random() * 12,
+      vy: 10 + Math.random() * 30,
+      amp: 6 + Math.random() * 20,
+      freq: 0.3 + Math.random() * 0.9,
+      phase: Math.random() * 6.28,
+      alpha: 0.18 + Math.random() * 0.5,
+      sprite: sprites[Math.random() < 0.55 ? 0 : (Math.random() < 0.6 ? 1 : 2)]
     };
+  };
+  var parts = [];
+  for (var pi = 0; pi < 40; pi++) parts.push(newParticle(true));
 
-    load(ti);
-    play();
+  var lastT = 0, clock = 0, fpsStart = 0, fpsFrames = 0, fpsChecked = false;
+  var drawParticles = function (t) {
+    if (!particlesOn) return;
+    requestAnimationFrame(drawParticles);
+    if (t - lastT < 32) return;                 /* 30 images par seconde maximum */
+    var dt = Math.min(0.1, (t - lastT) / 1000 || 0.033);
+    lastT = t;
+    clock += dt;
+
+    if (!fpsStart) fpsStart = t;
+    fpsFrames++;
+    if (!fpsChecked && t - fpsStart > 5000) {
+      fpsChecked = true;
+      if (fpsFrames / ((t - fpsStart) / 1000) < 14) { disableHeavyEffects(); return; }
+    }
+
+    pctx.clearRect(0, 0, PW, PH);
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      p.y -= p.vy * dt;
+      if (p.y < -20) { parts[i] = newParticle(false); continue; }
+      var x = p.x + Math.sin(clock * p.freq + p.phase) * p.amp;
+      var f = Math.min(1, p.y / 90, (PH - p.y + 30) / 90);
+      pctx.globalAlpha = Math.max(0, p.alpha * f);
+      pctx.drawImage(p.sprite, x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
+    pctx.globalAlpha = 1;
+  };
+  requestAnimationFrame(drawParticles);
+}
+
+/* ---------- Grain de film (5 images de bruit pre-calculees) ---------- */
+if (EFFECTS.grain) {
+  var gc = $("fx-grain");
+  var gctx = gc.getContext("2d");
+  var GW = gc.width = 660, GH = gc.height = 360;
+  var grainFrames = [];
+  for (var gf = 0; gf < 5; gf++) {
+    var gdata = gctx.createImageData(GW, GH);
+    var g32 = new Uint32Array(gdata.data.buffer);
+    for (var gi = 0; gi < g32.length; gi++) {
+      var gv = (Math.random() * 255) | 0;
+      g32[gi] = (255 << 24) | (gv << 16) | (gv << 8) | gv;
+    }
+    grainFrames.push(gdata);
+  }
+  var gcur = 0;
+  grainTimer = setInterval(function () {
+    gcur = (gcur + 1 + ((Math.random() * 3) | 0)) % grainFrames.length;
+    gctx.putImageData(grainFrames[gcur], 0, 0);
+  }, 120);
+}
+
+/* ---------- Glitchs de l'image : une rafale = quelques secousses + flashs rouges ---------- */
+if (EFFECTS.glitch) {
+  var flashEl = $("fx-flash");
+  glitchBurst = function (done) {
+    var act = document.querySelector(".bg.active");
+    var steps = 4 + ((Math.random() * 5) | 0);
+    var n = 0;
+    (function step() {
+      if (n >= steps) {
+        if (act) act.style.transform = "";
+        if (flashEl) flashEl.style.opacity = 0;
+        if (done) done();
+        return;
+      }
+      var dx = ((Math.random() - 0.5) * 2 * 0.6).toFixed(2);
+      if (act) act.style.transform = "translateX(" + dx + "%)";
+      if (flashEl) flashEl.style.opacity = (Math.random() * 0.22).toFixed(2);
+      n++;
+      setTimeout(step, 40 + Math.random() * 50);
+    })();
+  };
+  /* rafales aleatoires en continu */
+  var glitchLoop = function () {
+    glitchBurst(function () { setTimeout(glitchLoop, 3500 + Math.random() * 7000); });
+  };
+  setTimeout(glitchLoop, 2500);
+}
+
+/* ---------- Glitch du texte de la citation ---------- */
+(function textGlitch() {
+  setTimeout(function () {
+    if (quoteEl.classList.contains("show")) {
+      quoteEl.classList.add("tg");
+      setTimeout(function () { quoteEl.classList.remove("tg"); }, 160);
+      setTimeout(function () {
+        quoteEl.classList.add("tg");
+        setTimeout(function () { quoteEl.classList.remove("tg"); }, 90);
+      }, 260);
+    }
+    textGlitch();
+  }, 4000 + Math.random() * 5000);
 })();
 
-/* ---------- Mode démo : ouvre la page dans ton navigateur avec #demo à la fin de l'adresse ---------- */
-if (location.hash === "#demo") {
-    GameDetails("Demo", "", "rp_exemple_map", 64, "", "darkrp");
-    SetFilesTotal(200);
-    SetFilesNeeded(200);
-    SetStatusChanged("Downloading files...");
-    var n = 200;
-    var demo = setInterval(function () {
-        n -= 2;
-        SetFilesNeeded(Math.max(0, n));
-        DownloadingFile("materials/dsc/f4/banner.png");
-        if (n <= 0) { clearInterval(demo); SetStatusChanged("Lua Loaded"); }
-    }, 150);
-}
 </script>
 </body>
 </html>
